@@ -1,0 +1,21 @@
+{
+  "name": "rx-lit-html",
+  "version": "0.0.1",
+  "description": "Reactive extensions for lit-html",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^6.1.4",
+    "@types/mocha": "^5.2.7",
+    "rxjs": "^6.5.2",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "lit-html": "^1.1.1",
+    "ts-lint": "^4.5.1"
+  }
+}
