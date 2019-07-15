@@ -14,7 +14,7 @@ class DOMLifecycleHookElement extends HTMLElement {
 
     disconnectedCallback() {
         if (this._destructor) {
-            this._destructor;
+            this._destructor();
         }
     }
 }
