@@ -1,26 +1,33 @@
-type Constructor = () => Destructor;
+type Initializer = () => Destructor;
 type Destructor = () => void;
 
 class DOMLifecycleHookElement extends HTMLElement {
-    private _destructor?: Destructor;
+  public static create(initializer: Initializer): DOMLifecycleHookElement {
+    const elm = document.createElement("dom-lifecycle-hook") as DOMLifecycleHookElement;
+    elm.initializer = initializer;
+    return elm;
+  }
 
-    constructor(private _constructor: Constructor) {
-        super();
-    }
+  public initializer?: Initializer
+  private destructor?: Destructor;
 
-    connectedCallback() {
-        this._destructor = this._constructor();
+  public connectedCallback() {
+    if(this.initializer) {
+      this.destructor = this.initializer();
     }
+  }
 
-    disconnectedCallback() {
-        if (this._destructor) {
-            this._destructor();
-        }
+  public disconnectedCallback() {
+    if (this.destructor) {
+      this.destructor();
     }
+  }
 }
 
-customElements.define("dom-lifecycle-hook", DOMLifecycleHookElement);
-
-export {
-    DOMLifecycleHookElement
+if(typeof window.customElements === 'undefined') {
+  document.write('<script src="//unpkg.com/document-register-element"></script>');
 }
+
+window.customElements.define("dom-lifecycle-hook", DOMLifecycleHookElement);
+
+export { DOMLifecycleHookElement };

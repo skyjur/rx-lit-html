@@ -4,6 +4,8 @@
   "description": "Reactive extensions for lit-html",
   "main": "index.js",
   "scripts": {
+    "lint": "tslint --project .",
+    "format": "prettier --write **/*ts",
     "tests": "parcel test/index.html"
   },
   "author": "",
@@ -11,16 +13,23 @@
   "devDependencies": {
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.2",
+    "jasmine-core": "^3.4.0",
+    "karma": "^4.2.0",
+    "karma-jasmine": "^2.0.1",
     "mocha": "^6.1.4",
+    "prettier": "^1.18.2",
     "rxjs": "^6.5.2",
+    "source-map-support": "^0.5.12",
+    "tslint": "^5.18.0",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "lit-html": "^1.1.1",
-    "source-map-support": "^0.5.12",
-    "ts-lint": "^4.5.1"
+    "lit-html": "^1.1.1"
   },
   "browserslist": [
-    "last 1 Chrome version"
+    "last 1 Chrome version",
+    "last 1 Edge version",
+    "last 1 Firefox version"
   ]
 }

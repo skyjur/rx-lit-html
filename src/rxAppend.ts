@@ -6,15 +6,14 @@ type Mapper<T> = (v: T, index?: number) => unknown;
 
 interface IState {
   subscriptionPart: NodePart;
-  itemPart: NodePart;
+  listPart: NodePart;
 }
 
 const states = new WeakMap<NodePart, IState>();
 
 /**
- * A directive that renders the items of an Observable[1], replacing
- * previous values with new values, so that only one value is ever rendered
- * at a time.
+ * A directive that renders the items of an Observable[1], appending
+ * new values.
  *
  * [1]: https://rxjs-dev.firebaseapp.com/guide/observable
  *
@@ -22,10 +21,10 @@ const states = new WeakMap<NodePart, IState>();
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the observable.
  */
-export const rxReplace = directive(
+export const rxAppend = directive(
   <T>(observable: Observable<T>, mapper?: Mapper<T>) => (part: Part) => {
     if (!(part instanceof NodePart)) {
-      throw new Error("rxReplace can only be used as text or element nodes");
+      throw new Error("rxAppend can only be used as nodes");
     }
 
     if (part.value === observable) {
@@ -35,16 +34,17 @@ export const rxReplace = directive(
     part.value = observable;
 
     if (!states.has(part)) {
-      const state = {
-        itemPart: new NodePart(part.options),
+      const state: IState = {
+        listPart: new NodePart(part.options),
         subscriptionPart: new NodePart(part.options)
       };
+      part.clear();
       state.subscriptionPart.appendIntoPart(part);
-      state.itemPart.appendIntoPart(part);
+      state.listPart.appendIntoPart(part);
       states.set(part, state);
     }
 
-    const { subscriptionPart, itemPart } = states.get(part)!;
+    const { subscriptionPart, listPart } = states.get(part)!;
 
     let i = 0;
 
@@ -52,6 +52,12 @@ export const rxReplace = directive(
       DOMLifecycleHookElement.create(() => {
         const sub = observable.subscribe({
           next(v: any) {
+            if (i === 0) {
+              // clear previous results if there are any
+              listPart.clear();
+            }
+            const itemPart = new NodePart(part.options);
+            itemPart.appendIntoPart(listPart);
             itemPart.setValue(mapper ? mapper(v, i) : v);
             itemPart.commit();
             i++;

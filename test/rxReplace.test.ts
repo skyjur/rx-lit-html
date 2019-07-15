@@ -1,73 +1,179 @@
 import { equal } from "assert";
 import { html, render } from "lit-html";
-import { of, Subject } from "rxjs";
+import { NEVER, Observable, of, Subject } from "rxjs";
 import { rxReplace } from "../src/rxReplace";
 import { cleanHtml, watchObservable } from "./utils";
 
 describe("rxReplace", () => {
-    let container: HTMLDivElement;
+  let container: HTMLDivElement;
 
-    beforeEach(() => {
-        container = document.createElement("div");
-        window.document.body.appendChild(container);
-    });
+  beforeEach(() => {
+    container = document.createElement("div");
+    container.style.display = "none";
+    window.document.body.appendChild(container);
+  });
 
-    afterEach(() => {
-        container.remove();
-    });
+  afterEach(() => {
+    container.remove();
+  });
 
-    it("updating value using mapper", () => {
-        const input = new Subject();
+  it("text value is escaped", () => {
+    render(
+      html`
+        ${rxReplace(of("<hack>text</hack>"))}
+      `,
+      container
+    );
+    equal(
+      cleanHtml(container.innerHTML),
+      "<dom-lifecycle-hook></dom-lifecycle-hook>&lt;hack&gt;text&lt;/hack&gt;"
+    );
+  });
 
-        render(
-            html`${rxReplace(
-                input,
-                val => 
-                    html`<span>${val}</span>`
-            )}`, 
-            container
-        );
-        
-        equal(
-            cleanHtml(container.innerHTML),
-            '<dom-lifecycle-hook></dom-lifecycle-hook>'
-        )
+  it("html value is rendered as html", () => {
+    render(
+      html`
+        ${rxReplace(
+          of(
+            html`
+              <span>html</span>
+            `
+          )
+        )}
+      `,
+      container
+    );
+    equal(
+      cleanHtml(container.innerHTML),
+      "<dom-lifecycle-hook></dom-lifecycle-hook><span>html</span>"
+    );
+  });
 
-        input.next(1);
-        equal(
-            cleanHtml(container.innerHTML), 
-            '<dom-lifecycle-hook></dom-lifecycle-hook><span>1</span>'
-        )
+  it("previous value is replaced", () => {
+    const subject = new Subject();
+    render(
+      html`
+        ${rxReplace(subject)}
+      `,
+      container
+    );
+    subject.next("one");
+    subject.next("two");
+    equal(
+      cleanHtml(container.innerHTML),
+      "<dom-lifecycle-hook></dom-lifecycle-hook>two"
+    );
+  });
 
-        input.next(2);
-        equal(
-            cleanHtml(container.innerHTML), 
-            '<dom-lifecycle-hook></dom-lifecycle-hook><span>2</span>'
-        )
-    })
+  it("old observable is replaced by new observable", () => {
+    const first = new Subject();
+    render(
+      html`
+        ${rxReplace(first)}
+      `,
+      container
+    );
+    render(
+      html`
+        ${rxReplace(of("second"))}
+      `,
+      container
+    );
+    first.next("first");
+    equal(
+      cleanHtml(container.innerHTML),
+      "<dom-lifecycle-hook></dom-lifecycle-hook>second"
+    );
+  });
 
-    it("unsubscribed when observable no longer used", () => {
-        const subject = new Subject()
-        const observable1 = watchObservable(subject)
-        const observable2 = watchObservable(subject)
-        
-        render(
-            html`${rxReplace(observable1)}`, 
-            container
-        );
+  it("previous value is maintained when new observable is empty", () => {
+    render(
+      html`
+        ${rxReplace(of("first"))}
+      `,
+      container
+    );
+    render(
+      html`
+        ${rxReplace(NEVER)}
+      `,
+      container
+    );
+    equal(
+      cleanHtml(container.innerHTML),
+      "<dom-lifecycle-hook></dom-lifecycle-hook>first"
+    );
+  });
 
-        equal(observable1.activeSubscribers, 1, 'did not subscribe to first observable')
+  it("value is rendered using mappper", () => {
+    const mapper = (val: any) =>
+      html`
+        <span>mapper: ${val}</span>
+      `;
+    render(
+      html`
+        ${rxReplace(of(1), mapper)}
+      `,
+      container
+    );
+    equal(
+      cleanHtml(container.innerHTML),
+      "<dom-lifecycle-hook></dom-lifecycle-hook><span>mapper: 1</span>"
+    );
+  });
 
-        render(
-            html`${rxReplace(observable2)}`, 
-            container
-        );
+  it("unsubscribed when removed", () => {
+    const observable = watchObservable(NEVER);
 
-        equal(observable2.activeSubscribers, 1, 'did not subscribe to second observable')
-        equal(observable1.activeSubscribers, 0, 'did not unsubscribe from first observable')
+    render(
+      html`
+        ${rxReplace(observable)}
+      `,
+      container
+    );
+    render(html``, container);
 
-        render(html``, container);
+    equal(observable.subscribedCount, 1, "did not subscribe");
+    equal(observable.unsubscribedCount, 1, "did not unsubscribe");
+  });
 
-        equal(observable2.activeSubscribers, 0, 'did not unsubscribe from second observable')
-    })
+  it("nested replacement", () => {
+    const input = of(
+      html`
+        shallow, ${rxReplace(of("deep"))}
+      `
+    );
+
+    render(
+      html`
+        ${rxReplace(input)}
+      `,
+      container
+    );
+
+    equal(
+      cleanHtml(container.innerHTML),
+      "<dom-lifecycle-hook></dom-lifecycle-hook>shallow, <dom-lifecycle-hook></dom-lifecycle-hook>deep"
+    );
+  });
+
+  it("unsubscribed when replaced with new observable", () => {
+    const observable = watchObservable(NEVER);
+
+    render(
+      html`
+        ${rxReplace(observable)}
+      `,
+      container
+    );
+    render(
+      html`
+        ${rxReplace(NEVER)}
+      `,
+      container
+    );
+
+    equal(observable.subscribedCount, 1, "did not subscribe");
+    equal(observable.unsubscribedCount, 1, "did not unsubscribe");
+  });
 });
