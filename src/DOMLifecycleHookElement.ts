@@ -7,7 +7,7 @@ class DOMLifecycleHookElement extends HTMLElement {
     elm.initializer = initializer;
     return elm;
   }
-
+  
   public initializer?: Initializer
   private destructor?: Destructor;
 
@@ -22,10 +22,6 @@ class DOMLifecycleHookElement extends HTMLElement {
       this.destructor();
     }
   }
-}
-
-if(typeof window.customElements === 'undefined') {
-  document.write('<script src="//unpkg.com/document-register-element"></script>');
 }
 
 window.customElements.define("dom-lifecycle-hook", DOMLifecycleHookElement);
