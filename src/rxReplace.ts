@@ -1,5 +1,5 @@
-import { directive, html, NodePart, Part } from "lit-html";
-import { Observable, Subscription } from "rxjs";
+import { directive, NodePart, Part } from "lit-html";
+import { Observable } from "rxjs";
 import { DOMLifecycleHookElement } from "./DOMLifecycleHookElement";
 
 type Mapper<T> = (v: T, index?: number) => unknown;

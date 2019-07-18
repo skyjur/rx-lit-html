@@ -19,9 +19,7 @@ describe("rxReplace", () => {
 
   it("text value is escaped", () => {
     render(
-      html`
-        ${rxReplace(of("<hack>text</hack>"))}
-      `,
+      html`${rxReplace(of("<hack>text</hack>"))}`,
       container
     );
     equal(
@@ -32,15 +30,9 @@ describe("rxReplace", () => {
 
   it("html value is rendered as html", () => {
     render(
-      html`
-        ${rxReplace(
-          of(
-            html`
-              <span>html</span>
-            `
-          )
-        )}
-      `,
+      html`${rxReplace(
+          of(html`<span>html</span>`)
+        )}`,
       container
     );
     equal(
@@ -52,9 +44,7 @@ describe("rxReplace", () => {
   it("previous value is replaced", () => {
     const subject = new Subject();
     render(
-      html`
-        ${rxReplace(subject)}
-      `,
+      html`${rxReplace(subject)}`,
       container
     );
     subject.next("one");
@@ -68,15 +58,11 @@ describe("rxReplace", () => {
   it("old observable is replaced by new observable", () => {
     const first = new Subject();
     render(
-      html`
-        ${rxReplace(first)}
-      `,
+      html`${rxReplace(first)}`,
       container
     );
     render(
-      html`
-        ${rxReplace(of("second"))}
-      `,
+      html`${rxReplace(of("second"))}`,
       container
     );
     first.next("first");
@@ -88,15 +74,11 @@ describe("rxReplace", () => {
 
   it("previous value is maintained when new observable is empty", () => {
     render(
-      html`
-        ${rxReplace(of("first"))}
-      `,
+      html`${rxReplace(of("first"))}`,
       container
     );
     render(
-      html`
-        ${rxReplace(NEVER)}
-      `,
+      html`${rxReplace(NEVER)}`,
       container
     );
     equal(
@@ -107,13 +89,9 @@ describe("rxReplace", () => {
 
   it("value is rendered using mappper", () => {
     const mapper = (val: any) =>
-      html`
-        <span>mapper: ${val}</span>
-      `;
+      html`<span>mapper: ${val}</span>`;
     render(
-      html`
-        ${rxReplace(of(1), mapper)}
-      `,
+      html`${rxReplace(of(1), mapper)}`,
       container
     );
     equal(
@@ -126,9 +104,7 @@ describe("rxReplace", () => {
     const observable = watchObservable(NEVER);
 
     render(
-      html`
-        ${rxReplace(observable)}
-      `,
+      html`${rxReplace(observable)}`,
       container
     );
     render(html``, container);
@@ -139,15 +115,11 @@ describe("rxReplace", () => {
 
   it("nested replacement", () => {
     const input = of(
-      html`
-        shallow, ${rxReplace(of("deep"))}
-      `
+      html`shallow, ${rxReplace(of("deep"))}`
     );
 
     render(
-      html`
-        ${rxReplace(input)}
-      `,
+      html`${rxReplace(input)}`,
       container
     );
 
@@ -161,15 +133,11 @@ describe("rxReplace", () => {
     const observable = watchObservable(NEVER);
 
     render(
-      html`
-        ${rxReplace(observable)}
-      `,
+      html`${rxReplace(observable)}`,
       container
     );
     render(
-      html`
-        ${rxReplace(NEVER)}
-      `,
+      html`${rxReplace(NEVER)}`,
       container
     );
 
