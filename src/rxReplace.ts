@@ -22,7 +22,10 @@ const states = new WeakMap<NodePart, IState>();
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the observable.
  */
-export const rxReplace = directive(
+export const rxReplace: <T>(
+  observable: Observable<T>,
+  mapper?: Mapper<T>
+) => object = directive(
   <T>(observable: Observable<T>, mapper?: Mapper<T>) => (part: Part) => {
     if (!(part instanceof NodePart)) {
       throw new Error("rxReplace can only be used as text or element nodes");

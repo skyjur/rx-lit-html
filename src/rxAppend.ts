@@ -1,5 +1,5 @@
-import { directive, html, NodePart, Part } from "lit-html";
-import { Observable, Subscription } from "rxjs";
+import { directive, NodePart, Part } from "lit-html";
+import { Observable } from "rxjs";
 import { DOMLifecycleHookElement } from "./DOMLifecycleHookElement";
 
 type Mapper<T> = (v: T, index?: number) => unknown;
@@ -21,7 +21,10 @@ const states = new WeakMap<NodePart, IState>();
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the observable.
  */
-export const rxAppend = directive(
+export const rxAppend: <T>(
+  observable: Observable<T>,
+  mapper?: Mapper<T>
+) => object = directive(
   <T>(observable: Observable<T>, mapper?: Mapper<T>) => (part: Part) => {
     if (!(part instanceof NodePart)) {
       throw new Error("rxAppend can only be used as nodes");
